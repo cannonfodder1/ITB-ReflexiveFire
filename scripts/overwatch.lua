@@ -8,6 +8,7 @@ TILE_TOOLTIPS["reflex_mark"] = { "Reflexive Fire", "Mechs that get pushed or mov
 
 local update = true --If this is true, we will update overwatch tiles next frame, and set it to false again.
 local moveDone = true
+local undoMove = false
 local reflexReady = false
 local targetMech = nil
 
@@ -32,6 +33,9 @@ local function pawnRefreshOverwatch(pawn)
 	local pawnDefaults = _G[pawn:GetType()].Overwatch
 	GAME.Overwatch[id].markedTiles = {}
 	GAME.Overwatch[id].remainingShots = pawnDefaults.ShotsTotal or INT_MAX
+	if _G[pawn:GetType()] == HiveWarrior then
+		GAME.Overwatch[id].remainingShots = GAME.HW_BioAmmo or 1
+	end
 	GAME.Overwatch[id].shotPawnIds = {}
 end
 
@@ -52,6 +56,9 @@ local function pawnTrackedHook(mission, pawn)
 		local pawnDefaults = _G[pawn:GetType()].Overwatch
 		GAME.Overwatch[id] = {}
 		GAME.Overwatch[id].range = pawnDefaults.Range or INT_MAX
+		if _G[pawn:GetType()] == HiveWarrior then
+			GAME.Overwatch[id].range = GAME.HW_BioRange or 3
+		end
 		GAME.Overwatch[id].shotsPerPawn = pawnDefaults.ShotsPerPawn or INT_MAX
 		GAME.Overwatch[id].weaponSlot = pawnDefaults.WeaponSlot or 1
 		pawnRefreshOverwatch(pawn)
@@ -111,6 +118,8 @@ end
 local function missionUpdateHook()
 	--Continuously mark reflex tiles.
 	for id, _ in pairs(GAME.Overwatch) do
+		GAME.Overwatch = GAME.Overwatch or {}
+		GAME.OverwatchUndo = GAME.OverwatchUndo or {}
 		for _, mark in ipairs(GAME.Overwatch[id].markedTiles) do
 			if not Board:IsItem(mark) then
 				Board:MarkSpaceImage(mark, "combat/tile_icon/reflexmark.png", GL_Color(60,110,220,0.75))
@@ -177,10 +186,13 @@ local function missionUpdateHook()
 					if not Board:IsValid(curr) then
 						break
 					end
-					if Board:IsBlocked(curr, PATH_PROJECTILE) then
+					if Board:IsSmoke(curr) then
 						break
 					end
-					if Board:IsSmoke(curr) then
+					if Board:IsBlocked(curr, PATH_PROJECTILE) then
+						if Board:IsPawnSpace(curr) and moveDone then
+							table.insert(GAME.Overwatch[id].markedTiles, curr)
+						end
 						break
 					end
 					table.insert(GAME.Overwatch[id].markedTiles, curr)

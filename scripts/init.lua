@@ -1,4 +1,12 @@
 local function init(self)
+	-- set up an error message for out-of-date mod loaders
+	local minVer = "2.3.0"
+	if not modApi:isVersion(minVer) then
+		error(string.format(
+			"Mod loader version: %s. Required: %s",
+			modApi.version, minVer
+		))
+	end
 	-- Load up the Mod API Extension
 	if modApiExt then
 		-- modApiExt already defined. This means that the user has the complete
@@ -33,6 +41,7 @@ local function load(self,options,version)
 	modApi:addNextTurnHook(overwatch.newTurnHook)
 	modApi:addMissionStartHook(overwatch.missionStartHook)
 	modApi:addMissionUpdateHook(overwatch.missionUpdateHook)
+	modApi:addTestMechEnteredHook(overwatch.missionStartHook)
 	ReflexiveFire_modApiExt:addPawnTrackedHook(overwatch.pawnTrackedHook)
 	ReflexiveFire_modApiExt:addPawnUntrackedHook(overwatch.pawnUntrackedHook)
 	ReflexiveFire_modApiExt:addPawnMoveStartHook(overwatch.pawnMoveStartHook)
@@ -45,7 +54,7 @@ end
 return {
 	id = "Wolf_ReflexiveFire",
 	name = "Reflexive Fire",
-	version = "1.0.0",
+	version = "1.0.5",
 	requirements = {},
 	init = init,
 	load = load,
