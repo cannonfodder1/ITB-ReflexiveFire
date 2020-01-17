@@ -6,3 +6,5 @@ Normally in the game, the player's units attack on the player turn and the enemy
 Please note that all the files in the ModApiExt folder are not my work, they are a library of functions created by the community that I used to help create this mod.
 
 You can download Reflexive Fire here: http://subsetgames.com/forum/viewtopic.php?f=26&t=32983
+
+This mod has now been abandoned, all its functionality has been folded into the Hive War project and it has been significantly expanded on there. Hive War can be found as another repository on my page.
